@@ -20,7 +20,8 @@
 //vazão =  dv / dt
 float tempoQueAbombaFicaraLigada = float(volumeDeAguaDaIrrigacao)/float((vazaoDaBomba/(60*60)));//Em segundos
 long int tempoInicialBombaContinua;bool capituraContinuaTempo = true;
-long int tempoInicialBombaGotijamento;bool capituraGotijamentoTempo = true;
+long int tempoInicialBombaGotijamentoEmMinutos,tempoInicialBombaGotijamento;bool capituraGotijamentoTempo = true;
+int numeroDeLigacoesBombaGotijamento = 0;
 SensorPH sensor(SensorPHPorte);
 SensorCondutividade condutividadeEletrica(SensorCondutividadeEletrica);
 SensorDeUmidadeSolo UmidadeSoloContinua(SensorUmidadeDoSoloContinua);
@@ -67,17 +68,26 @@ void loop() {
         capituraContinuaTempo = true;
     }
 
-    if(float(umidadeDeCampo - umidadeDeCampo*.075) <  UmidadeSoloGotijamento.getUmidade() < float(umidadeDeCampo + umidadeDeCampo*.075)){
+    if(float(umidadeDeCampo - umidadeDeCampo*.075) <  UmidadeSoloGotijamento.getUmidade() < float(umidadeDeCampo + umidadeDeCampo*.075) and numeroDeLigacoesBombaGotijamento <= 6){
         //Bloco Bomba Gotijamento
         if(capituraGotijamentoTempo) {
-            tempoInicialBombaGotijamento = relogio.getTime().min;
+            tempoInicialBombaGotijamentoEmMinutos = relogio.getTime().min;
+            tempoInicialBombaGotijamento = millis();
             capituraGotijamentoTempo = false;
-            acionamentoDaBombaGotijamento(micros());
         }else{
-            if(relogio.getTime().min - tempoInicialBombaGotijamento >= 30){}
+            if(relogio.getTime().min - tempoInicialBombaGotijamentoEmMinutos >= 30) {
+                tempoInicialBombaGotijamento = millis();
+                numeroDeLigacoesBombaGotijamento+=1;
+            }else{
+                if(relogio.getTime().min - tempoInicialBombaGotijamentoEmMinutos < 0 ){
+                    tempoInicialBombaGotijamentoEmMinutos = 30 - tempoInicialBombaGotijamentoEmMinutos + (relogio.getTime().min-1);
+                }
+            }
+            acionamentoDaBombaGotijamento(tempoInicialBombaGotijamento);
         }
     }else{
         capituraGotijamentoTempo = true;
+        numeroDeLigacoesBombaGotijamento = 0;
     }
 
 }
