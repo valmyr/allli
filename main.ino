@@ -11,14 +11,16 @@
 #define SensorUmidadeDoSoloGotejamento A4
 #define relogio1 2
 #define relogio2 3
+#define IntervaloGotejamento 1 // 30 mim
 #define AcionamentoBombaContinua 4
 #define AcionamentoBombaGotejamento 5
 #define umidadeDeCampo 500 //ideal
-#define volumeDeAguaDaIrrigacao 10 //10 litros
+#define volumeDeAguaDaIrrigacao 20 //100 litros
 #define vazaoDaBomba 900 // As bombas usadas tem uma vazão de 900 / h
 
 //vazão =  dv / dt
-float tempoQueAbombaFicaraLigada = float(volumeDeAguaDaIrrigacao)/float((vazaoDaBomba/(60*60)));//Em segundos
+float tempoQueAbombaFicaraLigada = float(volumeDeAguaDaIrrigacao)/float((float(vazaoDaBomba)/float(60*60)));//Em segundos
+
 long int tempoInicialBombaContinua;bool capituraContinuaTempo = true;
 long int tempoInicialBombaGotejamentoEmMinutos,tempoInicialBombaGotejamento;bool capituraGotejamentoTempo = true;
 int numeroDeLigacoesBombaGotejamento = 0;
@@ -52,8 +54,20 @@ void setup() {
 }
 void loop() {
     DHT.read11(SensorDeTemperaturaUmidade);
-
-    if(float(umidadeDeCampo - umidadeDeCampo*.075) <  UmidadeSoloContinua.getUmidade() < float(umidadeDeCampo + umidadeDeCampo*.075)){
+    
+    Serial.println("Continua");
+    Serial.println( UmidadeSoloContinua.getUmidade());
+    Serial.println('\n');
+    Serial.println( tempoQueAbombaFicaraLigada);
+    Serial.println(digitalRead(AcionamentoBombaContinua));
+    delay(500);
+   Serial.println("SoloGotejamento");
+   Serial.println(UmidadeSoloGotejamento.getUmidade());
+   Serial.println(digitalRead(AcionamentoBombaGotejamento));
+   Serial.println('\n');
+    if( UmidadeSoloContinua.getUmidade()>= float(umidadeDeCampo - umidadeDeCampo*.075)  and UmidadeSoloContinua.getUmidade()  < float(umidadeDeCampo + umidadeDeCampo*.075)){
+    //if(UmidadeSoloContinua.getUmidade() == 0){
+   
         //Bloco Bomba Continua
         if(capituraContinuaTempo) {
             tempoInicialBombaContinua = millis();
@@ -66,20 +80,19 @@ void loop() {
     }else{
         capituraContinuaTempo = true;
     }
-
-    if(float(umidadeDeCampo - umidadeDeCampo*.075) <  UmidadeSoloGotejamento.getUmidade() < float(umidadeDeCampo + umidadeDeCampo*.075) and numeroDeLigacoesBombaGotejamento <= 6){
+       if(UmidadeSoloGotejamento.getUmidade()>= float(umidadeDeCampo - umidadeDeCampo*.075)  and UmidadeSoloGotejamento.getUmidade()  < float(umidadeDeCampo + umidadeDeCampo*.075)){
         //Bloco Bomba Gotejamento
         if(capituraGotejamentoTempo) {
             tempoInicialBombaGotejamentoEmMinutos = relogio.getTime().min;
             tempoInicialBombaGotejamento = millis();
             capituraGotejamentoTempo = false;
         }else{
-            if(relogio.getTime().min - tempoInicialBombaGotejamentoEmMinutos >= 30) {
+            if(relogio.getTime().min - tempoInicialBombaGotejamentoEmMinutos >= IntervaloGotejamento) {
                 tempoInicialBombaGotejamento = millis();
                 numeroDeLigacoesBombaGotejamento+=1;
             }else{
                 if(relogio.getTime().min - tempoInicialBombaGotejamentoEmMinutos < 0 ){
-                    tempoInicialBombaGotejamentoEmMinutos = 30 - tempoInicialBombaGotejamentoEmMinutos + (relogio.getTime().min-1);
+                    tempoInicialBombaGotejamentoEmMinutos = IntervaloGotejamento - tempoInicialBombaGotejamentoEmMinutos + (relogio.getTime().min-1);
                 }
             }
             acionamentoDaBombaGotejamento(tempoInicialBombaGotejamento);
@@ -91,18 +104,22 @@ void loop() {
 
 }
 bool acionamentoDaBombaContinua(long int tempoInicial){
+    Serial.println("Bomba Acionada Continua");
     if(millis()*pow(10,-3) - tempoInicial > tempoQueAbombaFicaraLigada){
         digitalWrite(AcionamentoBombaContinua,HIGH);
         return true;
     }
+    Serial.println("Bomba parada Continua");
     digitalWrite(AcionamentoBombaContinua,LOW);
     return false;
 }
 bool acionamentoDaBombaGotejamento(long int tempoInicial){
+    Serial.println("Bomba Acionada Gotejamento");
     if(millis()*pow(10,-3) - tempoInicial > tempoQueAbombaFicaraLigada/6){
         digitalWrite(AcionamentoBombaGotejamento,HIGH);
         return true;
     }
     digitalWrite(AcionamentoBombaGotejamento,LOW);
+    Serial.println("Bomba parada Gotejamento");
     return false;
 }
