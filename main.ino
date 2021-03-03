@@ -52,18 +52,17 @@ void setup() {
 }
 void loop() {
     DHT.read11(SensorDeTemperaturaUmidade);
-    Time DataHora = relogio.getTime();
 
     if(float(umidadeDeCampo - umidadeDeCampo*.075) <  UmidadeSoloContinua.getUmidade() < float(umidadeDeCampo + umidadeDeCampo*.075)){
         //Bloco Bomba Continua
         if(capituraContinuaTempo) {
-            tempoInicialBombaContinua = micros();
+            tempoInicialBombaContinua = millis();
             capituraContinuaTempo = false;
         }else{
             if(digitalRead(AcionamentoBombaContinua))
-                tempoInicialBombaContinua = micros();
+                tempoInicialBombaContinua = millis();
             }
-            acionamentoDaBombaContinua(tempoInicialBombaContinua*pow(10,3));
+            acionamentoDaBombaContinua(tempoInicialBombaContinua*pow(10,-3));
     }else{
         capituraContinuaTempo = true;
     }
@@ -92,7 +91,7 @@ void loop() {
 
 }
 bool acionamentoDaBombaContinua(long int tempoInicial){
-    if(micros()*pow(10,3) - tempoInicial > tempoQueAbombaFicaraLigada){
+    if(millis()*pow(10,-3) - tempoInicial > tempoQueAbombaFicaraLigada){
         digitalWrite(AcionamentoBombaContinua,HIGH);
         return true;
     }
@@ -100,7 +99,7 @@ bool acionamentoDaBombaContinua(long int tempoInicial){
     return false;
 }
 bool acionamentoDaBombaGotejamento(long int tempoInicial){
-    if(micros()*pow(10,3) - tempoInicial > tempoQueAbombaFicaraLigada/6){
+    if(millis()*pow(10,-3) - tempoInicial > tempoQueAbombaFicaraLigada/6){
         digitalWrite(AcionamentoBombaGotejamento,HIGH);
         return true;
     }
