@@ -11,17 +11,17 @@
 #define SensorUmidadeDoSoloGotejamento A4
 #define relogioSCL 2
 #define relogioSDA 3
-#define IntervaloGotejamento 1 // 30 mim
+#define IntervaloGotejamento 6 // 30 mim
 #define AcionamentoBombaContinua 4
 #define AcionamentoBombaGotejamento 5
 #define umidadeDeCampo 500 //ideal
-#define volumeDeAguaDaIrrigacao 1 //100 litros
+#define volumeDeAguaDaIrrigacao 6 //100 litros
 #define vazaoDaBomba 900 // As bombas usadas tem uma vazão de 900 / h
 //vazão =  dv / dt
 float tempoQueAbombaFicaraLigada = float(volumeDeAguaDaIrrigacao)/float((float(vazaoDaBomba)/float(60*60)));//Em segundos
 int n = 0;
 long int tempoInicialBombaContinua;bool capituraContinuaTempo = true;
-long int tempoInicialBombaGotejamentoEmMinutos,tempoInicialBombaGotejamento;bool capituraGotejamentoTempo = true;
+long int tempoInicialBombaGotejamentoEmMinutos = 0,tempoInicialBombaGotejamento = 0;bool capituraGotejamentoTempo = true;
 int numeroDeLigacoesBombaGotejamento = 8;
 SensorPH sensor(SensorPHPorte);
 SensorCondutividade condutividadeEletrica(SensorCondutividadeEletrica);
@@ -46,7 +46,7 @@ void setup() {
     Serial.begin(9600);
 //    relogio.setDOW(5);
     relogio.setDate(2,3,2021);
-    relogio.setTime(2,55,11);
+    relogio.setTime(2,55,58);
 //    relogio.setSQWRate(SQW_RATE_1);
 //    relogio.halt(false);
 //    relogio.enableSQW(true);
@@ -69,45 +69,53 @@ void loop() {
     }
     if(digitalRead(AcionamentoBombaContinua)){
         Serial.println("Bomba Acionada Continua");
-
         acionamentoDaBombaContinua(tempoInicialBombaContinua*pow(10,-3));
     }else{
         Serial.println("Bomba parada Continua");
     }
     //**************************************************************//
     if(capituraGotejamentoTempo and UmidadeSoloGotejamento.getUmidade()>= float(umidadeDeCampo - umidadeDeCampo*.075)  and UmidadeSoloGotejamento.getUmidade()  < float(umidadeDeCampo + umidadeDeCampo*.075)){
-        tempoInicialBombaGotejamento = millis();
-        tempoInicialBombaGotejamentoEmMinutos = relogio.getTime().sec;
+        tempoInicialBombaGotejamentoEmMinutos = relogio.getTime().sec+IntervaloGotejamento+float(tempoQueAbombaFicaraLigada)/6.0;//quando for usar minutos lembre-se de converter essa linha
+        if(59 < tempoInicialBombaGotejamentoEmMinutos and  relogio.getTime().sec == 59){
+            tempoInicialBombaGotejamentoEmMinutos-=59;
+        }
         capituraGotejamentoTempo = false;
-        acionamentoDaBombaGotejamento(tempoInicialBombaGotejamento*pow(10,-3)+IntervaloGotejamento);
+        tempoInicialBombaGotejamento = millis();
+        acionamentoDaBombaGotejamento(tempoInicialBombaGotejamento*pow(10,-3));
         numeroDeLigacoesBombaGotejamento = 1 ;
     }else{
         capituraGotejamentoTempo = true;
     }
     if(digitalRead(AcionamentoBombaGotejamento)){
         Serial.println("Bomba Acionada Gotejamento");
-        acionamentoDaBombaGotejamento(tempoInicialBombaGotejamento*pow(10,-3)+IntervaloGotejamento);
+        acionamentoDaBombaGotejamento(tempoInicialBombaGotejamento*pow(10,-3));
 
     }else{
         Serial.println("Bomba parada Gotejamento");
     }
-    if(relogio.getTime().sec > IntervaloGotejamento+tempoInicialBombaGotejamentoEmMinutos and numeroDeLigacoesBombaGotejamento < 6){
-        tempoInicialBombaGotejamento = millis();
-        tempoInicialBombaGotejamentoEmMinutos = relogio.getTime().sec;
+    if(!digitalRead(AcionamentoBombaGotejamento) and relogio.getTime().sec >= tempoInicialBombaGotejamentoEmMinutos and numeroDeLigacoesBombaGotejamento < 6) {
+        tempoInicialBombaGotejamentoEmMinutos = relogio.getTime().sec+IntervaloGotejamento+float(tempoQueAbombaFicaraLigada)/6.0;
+        if(tempoInicialBombaGotejamentoEmMinutos > 59 and relogio.getTime().sec == 59){
+            tempoInicialBombaGotejamentoEmMinutos-=59;
+        }
         ++numeroDeLigacoesBombaGotejamento;
-        acionamentoDaBombaGotejamento(tempoInicialBombaGotejamento*pow(10,-3)+IntervaloGotejamento);
-
+        tempoInicialBombaGotejamento = millis();
+        for(int i = 0; i < 10; i++)
+            Serial.println("-");
+        acionamentoDaBombaGotejamento(tempoInicialBombaGotejamento * pow(10, -3));
+        for(int i = 0; i < 10; i++)
+            Serial.println("-");
     }
 //    Serial.println("Inicial");
-//    Serial.println(tempoInicialBombaGotejamento + IntervaloGotejamento);
-//    Serial.println("\n");
-//    Serial.println("minutos");
-//    Serial.println(tempoInicialBombaGotejamentoEmMinutos);
-//    Serial.println(IntervaloGotejamento+tempoInicialBombaGotejamentoEmMinutos);
+////    Serial.println(tempoInicialBombaGotejamento*pow(10,-3));
+    Serial.println(tempoInicialBombaGotejamentoEmMinutos);
+    Serial.println(relogio.getTime().sec);
 //    Serial.println(relogio.getTime().sec);
-    Serial.println("Contador: ");
+//    Serial.println("Intervalo");
+//    Serial.println(IntervaloGotejamento);
+//    Serial.println("Contador: ");
 //    Serial.println(numeroDeLigacoesBombaGotejamento);
-    Serial.println(numeroDeLigacoesBombaGotejamento);
+//    Serial.println(numeroDeLigacoesBombaGotejamento);
 }
 bool acionamentoDaBombaContinua(long int tempoInicial){
     if(millis()*pow(10,-3)  < tempoQueAbombaFicaraLigada+tempoInicial){
@@ -118,7 +126,7 @@ bool acionamentoDaBombaContinua(long int tempoInicial){
     return false;
 }
 bool acionamentoDaBombaGotejamento(long int tempoInicial){
-    if(millis()*pow(10,-3) < float(tempoQueAbombaFicaraLigada/6.0) + tempoInicial){
+    if(millis()*pow(10,-3) < float(tempoQueAbombaFicaraLigada)/6.0 + float(tempoInicial)){
         digitalWrite(AcionamentoBombaGotejamento,HIGH);
         return true;
     }
