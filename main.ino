@@ -46,7 +46,7 @@ void setup() {
     Serial.begin(9600);
 //    relogio.setDOW(5);
     relogio.setDate(2,3,2021);
-    relogio.setTime(2,0,0);
+    relogio.setTime(2,55,57);
 //    relogio.setSQWRate(SQW_RATE_1);
 //    relogio.halt(false);
 //    relogio.enableSQW(true);
@@ -59,37 +59,35 @@ void loop() {
     DHT.read11(SensorDeTemperaturaUmidade);
     Serial.println(relogio.getTimeStr(2));
     //********************************************************//
-//    if( UmidadeSoloContinua.getUmidade()>= float(umidadeDeCampo - umidadeDeCampo*.075)  and UmidadeSoloContinua.getUmidade()  < float(umidadeDeCampo + umidadeDeCampo*.075)){
-//        //Bloco Bomba Continua
-//        if(capituraContinuaTempo) {
-//            tempoInicialBombaContinua = millis();
-//            capituraContinuaTempo = false;
-//        }
-//        acionamentoDaBombaContinua(tempoInicialBombaContinua*pow(10,-3));
-//    }else{
-//        capituraContinuaTempo = true;
-//    }
-//    if(digitalRead(AcionamentoBombaContinua)){
-//        Serial.println("Bomba Acionada Continua");
-//
-//        acionamentoDaBombaContinua(tempoInicialBombaContinua*pow(10,-3));
-//    }else{
-//        Serial.println("Bomba parada Continua");
-//    }
+    if(capituraContinuaTempo and  UmidadeSoloContinua.getUmidade()>= float(umidadeDeCampo - umidadeDeCampo*.075)  and UmidadeSoloContinua.getUmidade()  < float(umidadeDeCampo + umidadeDeCampo*.075)){
+        //Bloco Bomba Continua
+        tempoInicialBombaContinua = millis();
+        capituraContinuaTempo = false;
+        acionamentoDaBombaContinua(tempoInicialBombaContinua*pow(10,-3));
+    }else{
+        capituraContinuaTempo = true;
+    }
+    if(digitalRead(AcionamentoBombaContinua)){
+        Serial.println("Bomba Acionada Continua");
+
+        acionamentoDaBombaContinua(tempoInicialBombaContinua*pow(10,-3));
+    }else{
+        Serial.println("Bomba parada Continua");
+    }
     //**************************************************************//
-    if( UmidadeSoloGotejamento.getUmidade()>= float(umidadeDeCampo - umidadeDeCampo*.075)  and UmidadeSoloGotejamento.getUmidade()  < float(umidadeDeCampo + umidadeDeCampo*.075)){
-        if(capituraGotejamentoTempo){
-            tempoInicialBombaGotejamento = millis();
-            tempoInicialBombaGotejamentoEmMinutos = relogio.getTime().sec;
-            capituraGotejamentoTempo = false;
-            acionamentoDaBombaGotejamento(tempoInicialBombaGotejamento*pow(10,-3));
-            numeroDeLigacoesBombaGotejamento = 1 ;
-        }
+    if(capituraGotejamentoTempo and UmidadeSoloGotejamento.getUmidade()>= float(umidadeDeCampo - umidadeDeCampo*.075)  and UmidadeSoloGotejamento.getUmidade()  < float(umidadeDeCampo + umidadeDeCampo*.075)){
+        tempoInicialBombaGotejamento = millis();
+        tempoInicialBombaGotejamentoEmMinutos = relogio.getTime().sec;
+        capituraGotejamentoTempo = false;
+        acionamentoDaBombaGotejamento(tempoInicialBombaGotejamento*pow(10,-3));numeroDeLigacoesBombaGotejamento = 1 ;
     }else{
         capituraGotejamentoTempo = true;
     }
     if(digitalRead(AcionamentoBombaGotejamento)){
+        Serial.println("Bomba Acionada Gotejamento");
         acionamentoDaBombaGotejamento(tempoInicialBombaGotejamentoEmMinutos);
+    }else{
+        Serial.println("Bomba parada Gotejamento");
     }
     if(relogio.getTime().sec > IntervaloGotejamento+tempoInicialBombaGotejamentoEmMinutos and numeroDeLigacoesBombaGotejamento < 6){
         tempoInicialBombaGotejamento = millis();
@@ -101,11 +99,11 @@ void loop() {
 //    Serial.println(tempoInicialBombaGotejamento + IntervaloGotejamento);
 //    Serial.println("\n");
 //    Serial.println("minutos");
-    Serial.println(tempoInicialBombaGotejamentoEmMinutos);
-    Serial.println(IntervaloGotejamento+tempoInicialBombaGotejamentoEmMinutos);
-    Serial.println(relogio.getTime().sec);
-    Serial.println("Contador: ");
-    Serial.println(numeroDeLigacoesBombaGotejamento);
+//    Serial.println(tempoInicialBombaGotejamentoEmMinutos);
+//    Serial.println(IntervaloGotejamento+tempoInicialBombaGotejamentoEmMinutos);
+//    Serial.println(relogio.getTime().sec);
+//    Serial.println("Contador: ");
+//    Serial.println(numeroDeLigacoesBombaGotejamento);
 //    Serial.println(numeroDeLigacoesBombaGotejamento);
 }
 bool acionamentoDaBombaContinua(long int tempoInicial){
