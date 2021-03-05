@@ -97,7 +97,7 @@ void loop() {
         if(tempoInicialBombaGotejamentoEmMinutos > 59 and relogio.getTime().sec == 59)
             tempoInicialBombaGotejamentoEmMinutos-=59;
         ++numeroDeLigacoesBombaGotejamento;
-        tempoInicialBombaGotejamento = millis();\
+        tempoInicialBombaGotejamento = millis();
         acionamentoDaBombaGotejamento(tempoInicialBombaGotejamento * pow(10, -3));
     }
 }
