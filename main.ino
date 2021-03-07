@@ -17,7 +17,7 @@
 #define AcionamentoBombaGotejamento 5
 #define umidadeDeCampo 500 //ideal
 #define volumeDeAguaDaIrrigacao 6 //100 litros
-#define vazaoDaBomba 900 // As bombas usadas tem uma vazão de 900 / h
+#define vazaoDaBomba 900 //Serão usadas bombas com vazão de 900L/H
 //LCD Ports
 #define PorteRS 13
 #define PorteE 12
@@ -74,8 +74,6 @@ void loop() {
     lcd.print(relogio.getTime().hour);
     lcd.print(":");
     lcd.print(relogio.getTime().min);
-    lcd.print(":");
-    lcd.print(relogio.getTime().sec);
     lcd.setCursor(8,0);
     lcd.print(relogio.getTime().dow);
     lcd.print("/");
