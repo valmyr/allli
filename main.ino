@@ -13,7 +13,7 @@
 #define relogioSDA 2
 #define relogioSCL 3
 #define IntervaloGotejamento 3 // Intervalo da Bomba de gotejamento 30 mim. Atualizar quando o circuito estiver pronto.
-//Portas dos atuadores/Solenoides
+//Portas dos relés para ligar as respectivas bombas.
 #define AcionamentoBombaContinua 4
 #define AcionamentoBombaGotejamento 5
 #define umidadeDeCampo 500 //idealizado por mim para efeitos de teste de lógica. Atulizar quando o circuito estiver pronto.
