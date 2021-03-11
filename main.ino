@@ -12,19 +12,20 @@
 #define SensorUmidadeDoSoloGotejamento A4
 #define relogioSDA 2
 #define relogioSCL 3
-#define IntervaloGotejamento 5 // 30 mim
+#define IntervaloGotejamento 3 // Intervalo da Bomba de gotejamento 30 mim. Atualizar quando o circuito estiver pronto.
+//Portas dos atuadores/Solenoides
 #define AcionamentoBombaContinua 4
 #define AcionamentoBombaGotejamento 5
-#define umidadeDeCampo 500 //ideal
-#define volumeDeAguaDaIrrigacao 6 //100 litros
-#define vazaoDaBomba 900 //Serão usadas bombas com vazão de 900L/H
+#define umidadeDeCampo 500 //idealizado por mim para efeitos de teste de lógica. Atulizar quando o circuito estiver pronto.
+#define volumeDeAguaDaIrrigacao 3 //volume em litros. Atualizar quando o circuito estiver pronto.
+#define vazaoDaBomba 900 // As bombas usadas terão vazão de 900 / h
 //LCD Ports
-#define PorteRS 13
-#define PorteE 12
-#define PorteD3 11
-#define PorteD4 10
-#define PorteD5 9
-#define PorteD6 8
+#define PortRS 13
+#define PortE 12
+#define PortD3 11
+#define PortD4 10
+#define PortD5 9
+#define PortD6 8
 
 //vazão =  dv / dt
 float tempoQueAbombaFicaraLigada = float(volumeDeAguaDaIrrigacao)/float((float(vazaoDaBomba)/float(60*60)));//Em segundos
@@ -32,14 +33,18 @@ int n = 0;
 long int tempoInicialBombaContinua = 0;bool capituraContinuaTempo = true;
 long int tempoInicialBombaGotejamentoEmMinutos = 0,tempoInicialBombaGotejamento = 0;bool capituraGotejamentoTempo = true;
 int numeroDeLigacoesBombaGotejamento = 8;
+
+//Implementar o botão de controle para mostrar esses dados no display.
 SensorPH sensor(SensorPHPorte);
 SensorCondutividade condutividadeEletrica(SensorCondutividadeEletrica);
 SensorDeUmidadeSolo UmidadeSoloContinua(SensorUmidadeDoSoloContinua);
 SensorDeUmidadeSolo UmidadeSoloGotejamento(SensorUmidadeDoSoloGotejamento);
-
+//Sensor De umidade relativa do Ar e Temperatura.
 dht DHT;
+//Relogio
 DS1307 relogio(relogioSCL, relogioSDA);
-LiquidCrystal lcd(PorteRS,PorteE,PorteD3,PorteD4,PorteD5,PorteD6);
+//LCD
+LiquidCrystal lcd(PortRS,PortE,PortD3,PortD4,PortD5,PortD6);
 
 bool acionamentoDaBombaContinua(long int);
 bool acionamentoDaBombaGotejamento(long int);
@@ -67,7 +72,6 @@ void setup() {
     digitalWrite(AcionamentoBombaGotejamento,LOW);
 }
 void loop() {
-//    usigned int e;
     DHT.read11(SensorDeTemperaturaUmidade);
     //Serial.println(relogio.getTimeStr(2));
     lcd.setCursor(0,0);
@@ -128,7 +132,6 @@ void loop() {
         acionamentoDaBombaGotejamento(tempoInicialBombaGotejamento );
     }
     Serial.println(tempoInicialBombaGotejamentoEmMinutos);
-    lcd.clear();
 }
 bool acionamentoDaBombaContinua(long int tempoInicial){
     if(millis()*pow(10,-3)  < tempoQueAbombaFicaraLigada+tempoInicial){
