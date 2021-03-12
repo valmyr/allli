@@ -18,7 +18,7 @@ float SensorPH::getValorPH(){
                 coletas[j+1] = valorTemporario;
             }
         }
-        i = i - 1;
+        i-=1;
         if(i -1 >= numeroDeColetas)
           break;
     }
