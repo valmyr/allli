@@ -11,14 +11,13 @@ float SensorPH::getValorPH(){
     }
     //Ordenando
     while(true){
-        for(int j = 1; j < i; j++){
+        for(int j = 1; j < i--; j++){
             if(coletas[j-1] < coletas[j]){
                 int valorTemporario = coletas[j];
                 coletas[j] = coletas[j-1];
                 coletas[j+1] = valorTemporario;
             }
         }
-        i-=1;
         if(i -1 >= numeroDeColetas)
           break;
     }
