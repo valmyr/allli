@@ -1,5 +1,3 @@
-//apenas uma tentativa falha!
-
 #include <Arduino.h>
 #include <DS1307.h>
 #include<LiquidCrystal.h>
